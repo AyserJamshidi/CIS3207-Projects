@@ -1,0 +1,28 @@
+Parent program
+-Creates 3 child processes
+-Acts as 1 of the 3 signal generators (that signal SIGUSR1/2)
+-Control execution time of child processes and wait for their completion
+
+Signal Generators
+-Spinlock forever
+-Randomly select SIGUSR1 or 2
+-After generating the signal, log a "SIGUSR1/2 sent" with the current time
+-After signaling, sleep for [10,100] milliseconds
+
+Signal Handlers
+-Process only one type, SIGUSR1/2 and ignore whatever it isn't assigned
+-Spinlock
+-Wait for signal to arrive.
+-Upon signal arrival, increment a shared "SIGUSR1/2 received" counter
+    --Save the time of receipt of the signal and the ID of the receiving thread
+
+Reporting Handler
+-Monitor the receive signal counters
+-When 16 signals (in total) have arrived, log the following:
+    --Receive times
+    --Thread IDs
+    --Average time between reception (total receive times / 16 maybe?)
+
+Note:
+Global counters require the use of critical section control.
+Lock/unlock to allow private access to global counters.

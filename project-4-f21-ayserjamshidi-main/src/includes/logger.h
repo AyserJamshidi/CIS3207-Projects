@@ -1,0 +1,10 @@
+//
+// Created by ace on 11/30/21.
+//
+
+#ifndef PROJECT_4_F21_AYSERJAMSHIDI_LOGGER_H
+#define PROJECT_4_F21_AYSERJAMSHIDI_LOGGER_H
+
+void Logger();
+
+#endif //PROJECT_4_F21_AYSERJAMSHIDI_LOGGER_H

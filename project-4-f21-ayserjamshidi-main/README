@@ -1,0 +1,29 @@
+USER MANUAL
+
+To use this program you can either give it a single argument, or no argument.
+This single argument must be a 0 if you want to enable "Time Mode", which will
+cause the program to run for 30 seconds exactly and then peacefully exit, or,
+any other parameter/no parameter will cause the program to run in standard mode.
+
+Standard mode is when the program continues until it has logged 100,000 signals.
+This can take anywhere from 30 minutes to 2 hours, depending on how fast your
+computer is.
+
+During execution the program will announce the current total logged amount after
+every 16th log.  This serves to ensure the user knows that the program is
+continuing and not just hanging.
+
+When the program is ready to exit, it peacefully exists any and all children/th-
+reads along with the logger thread outputting all of the data into a file
+labelled "signalreceive_log.txt".  This log can be found in the same directory
+as the program.  The log contains a multitude of data and, at the bottom
+
+NOTE:
+        To maintain your logs, please rename, copy or move them to another
+        folder as the program DELETES "signalreceive_log.txt" the moment it is
+        ran with no chances of retrieval.
+
+USAGE:
+        ./main
+        ./main 0
+        ./main [...]
