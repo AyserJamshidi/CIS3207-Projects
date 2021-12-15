@@ -1,0 +1,88 @@
+Program Design
+The program is designed in 3 parts:  A main thread, a worker thread (or multiple
+worker threads) and a logger thread.  The main thread feeds the worker threads
+and the worker threads feed the logger thread.
+
+The main thread handles all incoming connections.  The program will initialize
+all expected pre-initialized variables, process arguments, create a TCP socket
+(inside the main thread) and then spin-lock, waiting for any client connections.
+Upon a successful client connection the client will either be assigned a random
+priority between 1 to 10 (if we're in a mode that isn't 0) or assigned a
+priority of 1 (if we're in mode 0).  With this, the main thread creates a client
+entry and immediately adds it into the worker queue.
+
+Upon a client entry being added into the worker queue an open worker thread will
+lock the worker mutex, remove the client from the queue (so no other workers
+work on this client), then unlock the worker mutex to allow other threads to
+work on any other clients still waiting in queue.  A worker that is handling a
+client entry will take an infinite amount of messages from that individual
+client and, with the given client buffer (a client's message), will call a
+dictionary (that was initialized in the main thread) function through a global
+variable and be received "OK" if the client's message was found inside of the
+given dictionary or "MISSPELLED" otherwise.  With this received string from the
+dictionary function, the worker thread will send the client the result and
+then create a logger entry that contains both the client's buffer and the
+dictionary's result, which is then stored into the logger's queue.
+
+Once a worker thread has stored the logger entry into the logger queue it will
+then request another message from the client and continue the exact same process
+infinitely until the client's connection is terminated.  The addition of the
+worker thread's logger entry into the logger queue will then call into action
+the single logger thread.  It will be signaled that an entry was added into the
+logger's queue so it'll do very similar steps to the worker thread:  It will
+get the first entry from the logger queue, remove it from the queue and then
+output (append) the entry into a designated log file.  The entry will contain
+both the client's buffer and the server's result.
+
+This entire process is maintained until the server is closed.
+
+--------------------------------------------------------------------------------
+
+Testing, Debugging, Results & Analysis
+As I've had experience with TCP servers and multithreading in the past (with
+Qt5 and the MSVC compiler threads) the concept of threading was very familiar.
+I initially started with a basic TCP connection with a generic example from
+GeeksForGeeks and modified the code to fit my needs along with using textbook
+code for creating the TCP socket.  I was able to easily confirm my main thread
+receiving a message by just doing simple output to the console like "Received
+by client #" and then the client's int.  While working on getting the client's
+buffer I was having an issue that outputting the buffer would cut off any text
+to the right of it.  I found out after 30 or so minutes that I had to end the
+line via std::endl, odd behavior!
+
+I had a similar issue with my logger thread.  I used ofstream to output to a
+file but I had an issue where, whenever adding to the file with the given syntax
+(file << input), nothing would be stored into the file.  I later found out I had
+to close the file as that would cause everything to get flushed into the file.
+
+I didn't enjoy how netcat would output the server's response and not go to a new
+line so I had to manually output 2 linebreaks after sending a response.  This is
+only turned on when "-linebreak=true" is given as I don't know if sending
+unnecessary information to the client will dock points.
+
+Otherwise, I didn't come across any issues with mutexes, signals or threading.
+With my previous experience in the subject I had a relatively solid time with
+that aspect.  All of my results were expected when doing tests apart from the
+bugs described above.
+
+--------------------------------------------------------------------------------
+
+Testing Results with Many Client in Priority Order
+To test my server's client handling I used CLion's wonderful debugging features.
+I set a breakpoint whenever a client was about to be added so the program would
+pause, then I loaded up 4 terminal programs and connected to my server.  At this
+point, the program hasn't added anything to the queues yet as it is still
+waiting to be resumed.  I removed the break point and then continued the program
+which caused all 4 queues to be added consecutively to see how my server would
+handle it.  It handled it perfectly fine and I knew the way I was handling
+connections was exactly as it should be.
+
+I then did a second test to check priority order.  I set a breakpoint inside of
+worker threads to prevent them from continuing when they detect something being
+inside of the worker queue.  Starting the program and connecting clients one by
+one I am able to see (due to CLion's debugging) the worker_queue being sorted
+as the first client was given a priority of 5 which got index 0, the second
+client having priority of 9 which was pushed into index 0 and the first client
+being shifted one position down, the next client being given priority 4 which
+was placed at the end of the queue and then a final client being given priority
+7 which was placed in-between the first and second client.

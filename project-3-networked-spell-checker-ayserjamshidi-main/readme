@@ -1,0 +1,90 @@
+NAME
+        Networked_SpellChecker
+
+SYNOPSIS
+        Networked_SpellChecker
+        Networked_SpellChecker [args]
+
+DESCRIPTION
+        Networked_SpellChecker is a simple yet extremely useful program that
+        can be executed and connected to through TCP connection software.  It
+        can have multiple client connections and handle messages being sent at
+        the same time.  Any sent messages from a TCP client will receive a
+        response -- either "OK" or "MISSPELLED" -- from the server if their
+        message is contained in the dictionary that the server has loaded.
+
+
+ARGUMENT PROCESSING
+        The networked spellchecker can multiple optional arguments.
+
+        Given an argument, the program will announce any successful or failed
+        attempts at recognizing, processing and changing any internal variables
+        per argument given.
+
+        If arguments are not given in the proper syntax it may cause the program
+        to have unexpected results internally. If arguments are given and the
+        argument processor determines there is an error, the program will output
+        the argument and its expected value.
+
+        Arguments can be given in any order and should contain no whitespace
+        when assigning a value to a parameter.
+
+ARGUMENT OPTIONS
+        -port=...       If the -port option is present, anything to the right
+                        of the = symbol is expected to be an integer that
+                        represents the user's desired port number.  This port
+                        number must be in the range of 1 to 65535.
+
+        -dict=...       If the -dict option is present, anything to the right
+                        of the = symbol is expected to be the file name of a
+                        dictionary that is in the proper format (one word per
+                        like) and contains no whitespace.
+
+        -workers=...    If the -workers option is present, anything to the right
+                        of the = symbol is expected to be an integer that
+                        represents the user's desired amount of workers.  This
+                        worker number must be anything above 0.
+
+        -max_msg_length=...     If the -max_msg_length option is present,
+                        anything to the right of the = symbol is expected to be
+                        an integer that represents the user's desired maximum
+                        length for any received client message, including null
+                        terminator.
+
+        -mode=...       If the -mode option is present, anything to the right
+                        of the = symbol is expected to be an integer that
+                        represents the user's desired mode of client handling
+                        where 0 is a standard FIFO queue and any other integer
+                        is a priority queue that determines a random priority
+                        for each new client, 10 being the highest and 1 being
+                        the lowest.
+
+INVOCATION
+        Any amount of argument options can be used.  For example, if
+        Networked_SpellChecker is invoked with -workers=5 then the maximum
+        amount of worker threads to be created will be set at 5 and,
+        consequently, a maximum amount of 5 clients will be able to connect
+        where all other connections else will be pushed into the queue.
+
+        If no argument options are given, the program assumed the following
+        default parameters:
+
+        -port=14567
+        -dict=words
+        -workers=4
+        -max_msg_length=80
+        -mode=0
+
+        Do note that there are extra variables that can be modified within the
+        program before compilation that can affect client connections and
+        worker handling.
+
+        variable LOG_FILENAME by default is "spellchecker_server_log.txt".  All
+        logged output will be appended to this file.  This can be changed to any
+        string before compilation with the predictable expected result of all
+        logged output being appended to the new filename..
+
+        variable MAX_WORKER_QUEUE_SIZE by default is 20.  The main connection
+        handler obeys this variable and if the queue risks containing more than
+        MAX_WORKER_QUEUE_SIZE then the main connection handler will wait for
+        a signal by the workers that a client connection has been terminated.
