@@ -1,0 +1,12 @@
+My plan for testing and creating this program goes as follows:
+
+1) Create basic forks to ensure that the parent will wait for the child to finish executing.
+2) Implement output redirect > and ensure functionality with both > and >>
+	To test this I will be having files that have text inside of it to see if > will clear and append, and if >> will just append.
+3) Implement input redirect < and ensure functionality
+	To test this I will have the parent create a child and wait for its output.  After wait(), it will continue and attempt to read the child's output
+	from the redirect file.
+4) Implement piping from child process to parent process
+	To test this I will create a pipe from the child's stdout (which executes the first command) to the parent's stdin (which executes the second command)
+
+These are the main things I will be testing.  Splitting strings and creating commands should be pretty easy along with determining which command to use and if specific files that are attempting to be executed exist or not.

@@ -1,0 +1,7 @@
+cd ..
+echo cis3207
+touch test.txt
+cat < output.txt > output2.txt
+ls -la >> test.txt
+echo hi & echo another command
+cd . & cd /

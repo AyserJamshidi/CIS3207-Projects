@@ -1,0 +1,291 @@
+#include <uninstd.h>
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+#define SHELL_NAME "My_Shell"
+#define SHELL_SUFFIX ">"
+
+struct user_cmd {
+	std::string name;  // Command name
+	int argc;		   // Argument count
+	char *argv[100];   // Argument vector NOTE: Can this be a string vector?
+	bool input_mode;   // <
+	int output_mode;  // > or >>
+	bool pipe;		   // |
+	bool background;   // &
+};
+
+int main(int argc, char **argv) {
+	string cwd = getcwd();
+
+	if (cwd.length <= 0) {
+		perror("An error occurred while getting the current directory.");
+		return -1;	// TODO: Do we need to exit a specific int if an error has occurred?
+	}
+
+	// Overwrite the current environment with our shell's
+	setenv(SHELL_NAME, cwd, true);
+
+	// Create file descriptors for pipe
+	int fd[2];
+	pipe(fd);  // Apply WR and RD to fd.
+
+	while (keep_running) {
+		std::vector<user_cmd> user_commands;
+
+		if (argc == 1) {  // Interactive mode
+
+			// Get user input
+			std::string user_input;
+
+			while (true) {
+				std::cin >> user_input;
+
+				// If the input is acceptable, proceed.
+				if (user_input.length() <= 80)
+					break;
+				else
+					std::cout << "Too many characters.  Use 80 or less.\n"
+							  << SHELL_SUFFIX << std::endl;
+			}
+
+			// Get tokens
+			string token_array[] = user_input.split(' ');  // All strings split by a space
+
+			// Please ignore this, this is real code
+			// Tokenize user input
+			// std::vector<std::string> tokens;
+
+			// size_t pos = 0;
+			// while ((pos = user_input.find(' ')) != std::string::npos) {
+			//	tokens.push_back(user_input.substr(0, pos));
+			//	user_input.erase(0, pos + 1);
+			//}
+
+			// Get commands
+			int cur_index = 0;
+
+			// Loop until we hit the "Enter" char
+			while (token_array.size() > 0 && token_array[cur_index] != '\n') {
+				// Create a new command
+				user_cmd current_cmd;
+
+				current_cmd.name = token_array[cur_index++];
+
+				// Loop tokens until we hit &, | or run out.
+				while (cur_index < token - array.size() && (token_array[cur_index] != '&' || token_array[cur_index] != '|'))
+					current_cmd.argv->append(token_array[cur_index++]);
+
+				// Handle pipe
+				if (token_array[cur_index] == '|') {
+					current_cmd.pipe = true;
+				}
+
+				// Handle background
+				if (token_array[cur_index] == '&') {
+					current_cmd.background = true;
+				}
+
+				current_cmd.argv->append(token_array[cur_index++]);
+
+				// Add the command to the command vector
+				user_commands.push_back(current_cmd);
+			}
+		} else if (argc == 2) {	 // Batch mode
+			// Put all of the text from batch.txt into file_input
+			std::string file_input = ReadFrom(argv[1]);
+
+			// Split file_input into a string array with the Enter key (\n) being the delimiter
+			std::string input_array[] = file_input.split("\n");
+
+			// Same process as how the interactive shell handles input
+			create tokens for each input_array element;
+		} else {
+			// TODO: What happens here?  Nothing?
+		}
+
+		// Time to handle commands!
+		switch (user_commands.at(0).name) {
+			case "cd":
+				internal_cd();
+				break;
+			case "clr":	 // Clear the screen
+				internal_clr();
+				break;
+			case "dir":	 // Lists the contents of directory <directory>
+				internal_dir();
+				break;
+			case "environ":	 // List all environment variables
+				internal_environ();
+				break;
+			case "echo":  // Display <comment> on the display followed by a \n
+				internal_echo();
+				break;
+			case "help":  // Display the user manual using the "more" (huh??) filter
+				internal_help();
+				break;
+			case "pause":  // Stop completely until 'Enter' is pressed.
+				internal_pause();
+				break;
+			case "quit":
+				keep_running = !keep_running;
+				break;
+			default:
+				// Fork a shell and initiate this command
+				external_cmd();
+				break;
+		}
+	}
+
+	return 0;
+}
+
+void internal_cd(user_cmd cmd) {
+	// Error check
+	if (cmd.argc > 2) {
+		print "You can't have more than one argument.";
+		return;
+	}
+
+	string cwd = getcwd();
+
+	// Check to see if we were able to get the current working directory.  If not, output an error message.
+	if (cwd.length <= 0) {
+		perror();
+		return;
+	}
+
+	if (cmd.argc == 1) {
+		print cwd;
+		// TODO: What is the output when no argument is given?
+		return;
+	}
+
+	// Check if the given path exists.  If it does, change to it.
+	if (cmd.argv[1] exists) {
+		chdir(cmd.argv[1]);
+		cwd = getcwd();
+
+		setenv("cwd", cwd, true);
+	} else {  // The desired path doesn't exist
+		perror();
+	}
+}
+
+void internal_clr() {
+	// If below doesn't work well, try \e[H\e[2J\e[3J
+	std::cout << "\e[1;1H\e[2J" << SHELL_NAME << SHELL_SUFFIX << std::endl;
+}
+
+void internal_dir(user_cmd cmd) {  // TODO: Check Alex's thing, why does he handle piping and stuff?
+	// Error check
+	if (cmd.argc > 2) {
+		print "You can't have more than one argument.";
+		return;
+	}
+
+	// Get current working directory
+	string cwd = getcwd();
+
+	// Error check if the received directory is valid
+	if (cwd.length <= 0) {
+		perror("An error occurred while getting the current directory.");
+		return -1;	// TODO: Do we need to exit a specific int if an error has occurred?
+	}
+
+	// Open directory
+	// If argc == 1, open current directory, otherwise, open given directory
+	DIR *desired_dir = opendir(cwd + (cmd.argc == 1 ? "" : cmd.argv[1]));
+
+	// If the directory couldn't be opened, print an error and return
+	if (desired_dir == nullptr) {
+		perror();  // Something happened while opening the directory
+		return;
+	}
+
+	// The directory was successfully opened, create a directory entry
+	struct dirent *directory_info;
+
+	// Use and reuse our newly created directory entry to output the name of
+	// every directory entry found.
+	while ((directory_info = readdir(desired_dir)) != NULL) {
+		print(directory_info->d_name);
+	}
+
+	// Cleanup.  Close the directory.
+	closedir(desired_dir);
+}
+
+void internal_environ() {  // environ
+	for (string env_entry : environ) {
+		print env_entry;
+	}
+}
+
+void internal_echo(user_cmd cmd) {
+	if (cmd.argc == 1) {
+		// TODO: What do we do when no arguments are given?
+	} else {
+		for (int i = 1; i < argc; i++) {
+			print argv[i];
+		}
+
+		print '\n';
+	}
+}
+
+void internal_help() {					// similar to wcat but always prints the same file
+	file read_me = read("readme.txt");	// TODO: Is this the file we need to read?
+
+	if (!read_me.isOpen()) return;
+
+	while (!read_me.isEmpty()) {
+		std::cout << read_me.getNextLine() << std::endl;
+	}
+
+	read_me.close();
+}
+
+void internal_pause() {
+	// Keep requesting a character until the received character is the Enter key.
+	for (; getchar() != '\n';)
+		;
+
+	//while (getchar() != '\n') {
+	//	// Nothing needed here
+	//}
+}
+
+void external_cmd(user_cmd cmd) {
+	if (cmd.pipe) {
+		create pipe redirect
+		create a fork that will write into this pipe
+		the fork will feed all output to parent input
+		parent uses piped data as stdin for current execution
+	}
+
+	if (cmd.background) {		
+		if (fork() != 0) // At this point the child will be running this command as we don't want the parent to.
+			return;
+	}
+
+	if (cmd.output_mode) {	 // > or >>
+		open cmd stdin file with write permissions;
+
+		if (cmd.output_mode == 1)	// > == overwrite existing file with current output
+			clear the output file;
+
+		dup2 to redirect and overwrite fd 1;
+	}
+
+	if (cmd.input_mode) {  // <
+		open cmd stdout file with read permissions;
+
+		dup2 to redirect and overwrite fd 0;
+	}
+
+	fork();
+	execv();
+}

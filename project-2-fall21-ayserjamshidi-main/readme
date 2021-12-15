@@ -1,0 +1,159 @@
+NAME
+        My_Shell - C++ shell with support for basic input and output redirection
+
+SYNOPSIS
+        My_Shell
+        My_Shell [FILE]
+
+DESCRIPTION
+        My_Shell is a simple shell that can be used to execute commands,
+        redirect either/both input and output, run commands in the background
+        and also take in a file during the shell's initialization to execute
+        each command given in that file.
+
+ARGUMENT PROCESSING
+        The shell can take an optional single argument (argument 0) and, if
+        included, must be the name of a file.
+
+        Given a single argument the shell will attempt to read the filename
+        given and execute commands line-by-line, starting from the file's first
+        line and continuing onto consecutive lines until the last line's
+        command has been executed, which the shell will then terminate itself.
+
+        If more than just a single argument is given then the shell will simply
+        terminate itself as this is not a valid way to utilize the shell.
+
+INTERNAL COMMANDS
+    cd [FILE]
+        The 'cd' command, when supplied with [FILE], changes the shell's current
+        working directory to that of [FILE].  If [FILE] is not given then the
+        current working directory will be printed and if more than one argument
+        is given, only the first argument will be taken into consideration.
+
+        Note that whenever the current directory is changed, the PWD environment
+        variable is updated to reflect the new directory the shell is currently
+        in.
+
+            USAGE:  cd
+                    cd [FILE]
+                    cd [FILE] [...]
+
+    clr
+        Completely clears the terminal window.
+
+        The 'clr' command, when supplied with any amount of arguments, will
+        ignore them completely and simply clear the terminal entirely.
+
+            USAGE:  clr
+                    clr [...]
+
+    dir [FILE]
+        List all of the desired directory's files.
+
+        The 'dir' command, when supplied with [FILE], will list entries of the
+        given directory.  [FILE] can be a relative or absolute path.  If [FILE]
+        is not provided then the shell's current directory entries will be
+        printed and if given more than one argument, 'dir' will alert you that
+        it only takes one argument and not print out any entries.
+
+            USAGE:  dir
+                    dir [FILE]
+
+    environ
+        List all of the shell's environment variables.
+
+        The 'environ' command, when supplied with any amount of arguments, will
+        ignore them completely and proceed to list every environment variable
+        entry in the shell's scope.
+
+            USAGE:  environ
+                    environ [...]
+
+    path
+        Sets the PATH environment variable to all directories given.
+
+        The 'path' command, when supplied with any amount of arguments, will
+        set the PATH environment variable to all given directories.  Each
+        individual directory must have no spaces and must be absolute paths.  If
+        no arguments are given then the PATH environment variable will be empty.
+
+            USAGE:  path
+                    path [...]
+
+    echo [...]
+        Outputs a message to the terminal screen.
+
+        The 'echo' command, when supplied with any amount of arguments, will
+        output all arguments as a single message to the terminal screen.  If no
+        arguments are given then echo will simply print an empty line.
+
+            USAGE:  echo
+                    echo [...]
+
+    help
+        Displays this manual
+
+        The 'help' command, when supplied with any amount of arguments, will
+        ignore them completely and proceed to display the current user manual
+        that you're reading now.
+
+            USAGE:  help
+                    help [...]
+
+    pause
+        Pauses the shell until the ENTER key is pressed.
+
+    quit
+        Quits the shell
+
+INPUT/OUTPUT REDIRECTION
+        This shell allows one kind of input redirection and two kinds of output
+        redirections.
+
+    '<' (INPUT):
+        When executing a command that is expecting some input you can use an
+        input redirection along with a file name that contains the desired
+        input to feed into the command.
+
+        USAGE EXAMPLE:  CMD [...] < FILENAME
+
+    '>' (TRUNCATING OUTPUT):
+        When executing a command that has output that you would like to save,
+        you can use a truncating output redirection with a file name that
+        will be entirely overwritten with any output of the executed command.
+
+        Note that when outputting to a file that is not created, the newly
+        created file may not give the user permission to view the file when
+        being viewed outside of a shell instance.  To combat this random
+        behavior, output to a file that is already made or create the filename
+        by using "touch [FILENAME]"
+
+        Note that when a file is truncated, the previous contents of it are
+        lost completely.
+
+        USAGE EXAMPLE:  CMD [...] > FILENAME
+
+    '>>' (APPENDING OUTPUT):
+        When executing a command that has output that you would like to save,
+        you can use an appending output redirection with a file name that will
+        have all of the output of the executed command appended to the desired
+        file.
+
+        Note that when outputting to a file that is not created, the newly
+        created file may not give the user permission to view the file when
+        being viewed outside of a shell instance.  To combat this random
+        behavior, output to a file that is already made or create the filename
+        by using "touch [FILENAME]"
+
+        USAGE EXAMPLE:  CMD [...] >> FILENAME
+
+BACKGROUND EXECUTION
+        This shell allows any command being executed to be ran in the background
+        without any interruption.
+
+    '&'
+        Background execution will allow any desired command in a newly created
+        instance of this shell that will run concurrently with the primary
+        shell instance that continues to execute commands.
+
+        USAGE EXAMPLE: CMD [...] &
